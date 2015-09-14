@@ -8,6 +8,7 @@ var longitude = 121.00;
 var latitude = 48.00;
 var data = "";
 var cursor = '';
+var array = [];
 
 var insertDocuments = function(db, callback) {
     var collection = db.collection('myCol');
@@ -25,7 +26,6 @@ var findDocuments = function(db, callback) {
     collection.find({loc:{$near:[longitude, latitude]}},{_id:0}).limit(4).toArray(function(err, docs) {
         assert.equal(err, null);
         console.log("Found the following records");
-        //console.dir(docs);
         callback(docs);
     });
 }
@@ -63,14 +63,17 @@ var server = http.createServer(function(request, response) {
                 assert.equal(null, err);
                 console.log("Connected correctly to server");
                 findDocuments(db, function(results) { 
-                    cursor = results;
+                    var emailres = results[0].email;
+                    console.log(emailres);
+                    //cursor = results;
+                    array = results.slice();
                     insertDocuments(db, function() {
                             db.close();
                     });
                 });
             });
             response.writeHead(200, "OK", {'Content-Type': 'text/plain'});
-            var buffer = new Buffer(JSON.stringify(cursor), "utf-8");
+            var buffer = new Buffer("{data:" + JSON.stringify(array) + "}", "utf-8");
             response.write(buffer);
             response.end();
         });
